@@ -1,0 +1,497 @@
+<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#C22A62"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pontos Luanna"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>Pontos da Luanna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: a "mealheiro" header with the balance, then tabs (Hoje, Trocar, Semana, Histórico, Ajustar) in one centred column. */
+:root{
+  --bg:#EEF3FA; --surface:#FFFFFF; --surface-2:#E3EAF5; --ink:#1C2340; --muted:#5B6584; --line:#CDD6E6;
+  --berry:#C22A62; --berry-soft:#FBE3EC; --coin:#E9A800; --coin-ink:#5A4100; --coin-soft:#FFF2C7;
+  --leaf:#1E8A5C; --leaf-soft:#DDF3E8; --danger:#B3261E;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131829; --surface:#1C2238; --surface-2:#252D47; --ink:#EEF1FA; --muted:#A3ACC8; --line:#343E5E;
+  --berry:#FF6FA0; --berry-soft:#3A1F33; --coin:#FFC83D; --coin-ink:#2A1F00; --coin-soft:#3A3115;
+  --leaf:#4FD39A; --leaf-soft:#173329; --danger:#FF8A80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131829; --surface:#1C2238; --surface-2:#252D47; --ink:#EEF1FA; --muted:#A3ACC8; --line:#343E5E;
+  --berry:#FF6FA0; --berry-soft:#3A1F33; --coin:#FFC83D; --coin-ink:#2A1F00; --coin-soft:#3A3115;
+  --leaf:#4FD39A; --leaf-soft:#173329; --danger:#FF8A80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--berry);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.top h1{font-size:clamp(30px,6vw,44px);font-weight:800;color:var(--berry)}
+.top p{margin:2px 0 0;color:var(--muted)}
+.jar{display:flex;align-items:center;gap:12px;background:var(--coin-soft);border:2px solid var(--coin);border-radius:999px;padding:8px 20px 8px 8px}
+.coin{width:52px;height:52px;border-radius:50%;background:var(--coin);color:var(--coin-ink);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:26px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+.jar b{font-family:var(--display);font-size:38px;line-height:1;display:block}
+.jar small{color:var(--muted);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.jar.bump .coin{animation:bump .5s ease}
+@keyframes bump{40%{transform:scale(1.18) rotate(-8deg)}}
+
+/* Tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:4px}
+.tabs button{border:0;background:transparent;padding:9px 14px;border-radius:999px;font-family:var(--display);font-weight:700;font-size:17px;color:var(--muted);white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.panel{display:flex;flex-direction:column;gap:18px}
+
+/* Day chips */
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.days button{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 0;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.days button span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.days button strong{font-family:var(--display);font-size:20px}
+.days button em{font-style:normal;font-size:12px;color:var(--leaf);font-weight:700;min-height:15px}
+.days button[aria-pressed="true"]{border-color:var(--berry);background:var(--berry-soft)}
+.days button.today span{color:var(--berry);font-weight:700}
+
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-head h2{font-size:24px}
+.sec-head .muted{color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+
+.task{display:flex;align-items:center;gap:12px;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:var(--r);padding:12px 14px;min-height:62px;transition:transform .12s ease,background .12s ease}
+.task:active{transform:scale(.98)}
+.task .tick{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:700}
+.task .name{flex:1;min-width:0}
+.task .pts{flex:none;font-family:var(--display);font-weight:800;color:var(--coin-ink);background:var(--coin-soft);border-radius:999px;padding:2px 10px;font-size:16px}
+.task[aria-pressed="true"]{background:var(--leaf-soft);border-color:var(--leaf)}
+.task[aria-pressed="true"] .tick{background:var(--leaf);border-color:var(--leaf);color:var(--surface)}
+.daysum{font-family:var(--display);font-size:20px;text-align:right}
+.daysum b{color:var(--leaf)}
+
+/* Rewards */
+.reward{display:flex;flex-direction:column;gap:10px;border:2px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px}
+.reward .row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.reward .name{font-weight:700;min-width:0}
+.cost{flex:none;display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:800;font-size:18px}
+.cost i{width:18px;height:18px;border-radius:50%;background:var(--coin);display:inline-block;box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--coin);border-radius:inherit}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;background:var(--ink);color:var(--bg)}
+.btn.berry{background:var(--berry);color:#fff}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.need{font-size:14px;color:var(--muted)}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px}
+
+/* Week table */
+.tablewrap{overflow-x:auto;border:2px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center}
+th:first-child,td:first-child{text-align:left;padding-left:12px}
+thead th{font-family:var(--display);font-size:15px;color:var(--muted);font-weight:700}
+tbody tr.grp td{background:var(--surface-2);font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+td.mark{color:var(--leaf);font-weight:700}
+tfoot td{font-family:var(--display);font-weight:800;border-bottom:0}
+.weeknav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.weeknav .ctrls{display:flex;gap:6px;align-items:center}
+
+/* History */
+.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:2px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.hist li{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.hist li:last-child{border-bottom:0}
+.hist .when{color:var(--muted);font-size:13px;width:84px;flex:none}
+.hist .what{flex:1;min-width:0}
+.hist .delta{font-family:var(--display);font-weight:800}
+.plus{color:var(--leaf)} .minus{color:var(--berry)}
+.linkbtn{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
+
+/* Settings */
+.edit{display:flex;flex-direction:column;gap:8px}
+.erow{display:grid;grid-template-columns:1fr 76px 150px 36px;gap:6px;align-items:center}
+.erow input,.erow select{width:100%;min-width:0;font:inherit;padding:8px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.erow .x{border:0;background:none;color:var(--danger);font-size:22px;line-height:1}
+@media (max-width:560px){.erow{grid-template-columns:1fr 64px 36px}.erow select{grid-column:1/3}}
+.bar-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.note{color:var(--muted);font-size:14px;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1}
+.warn{margin:0;padding:12px 14px;border-radius:var(--r);background:var(--berry-soft);color:var(--ink);border:2px solid var(--berry);font-weight:700}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:20px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Pontos da Luanna</h1>
+      <p id="sub">Ganha pontos com tarefas e bom comportamento. Troca-os por prémios.</p>
+    </div>
+    <div class="jar" id="jar" aria-live="polite">
+      <div class="coin" aria-hidden="true">★</div>
+      <div><small>Pontos no mealheiro</small><b class="num" id="saldo">0</b></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="hoje" aria-selected="true">Ganhar</button>
+    <button role="tab" data-tab="trocar" aria-selected="false">Trocar</button>
+    <button role="tab" data-tab="semana" aria-selected="false">Semana</button>
+    <button role="tab" data-tab="historico" aria-selected="false">Histórico</button>
+    <button role="tab" data-tab="ajustar" aria-selected="false">Ajustar</button>
+  </nav>
+
+  <p class="warn" id="warn" hidden>Atenção: este navegador não está a guardar os pontos. Experimente abrir a página no Chrome (Android) ou no Safari (iPhone).</p>
+  <main id="view" class="panel"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- Valores por defeito (7 anos) ---------- */
+const DEFAULT_CONFIG = {
+  tarefas: [
+    {id:"cama", nome:"Fazer a cama", pontos:1, grupo:"Tarefas"},
+    {id:"vestir", nome:"Vestir-se sozinha de manhã", pontos:1, grupo:"Tarefas"},
+    {id:"dentes", nome:"Lavar os dentes manhã e noite", pontos:1, grupo:"Tarefas"},
+    {id:"mochila", nome:"Preparar a mochila", pontos:1, grupo:"Tarefas"},
+    {id:"mesa", nome:"Pôr ou levantar a mesa", pontos:1, grupo:"Tarefas"},
+    {id:"arrumar", nome:"Arrumar o quarto e os brinquedos", pontos:2, grupo:"Tarefas"},
+    {id:"tpc", nome:"Fazer os trabalhos de casa", pontos:2, grupo:"Tarefas"},
+    {id:"ler", nome:"Ler 15 minutos", pontos:2, grupo:"Tarefas"},
+    {id:"escola", nome:"Portou-se bem na escola", pontos:2, grupo:"Comportamento"},
+    {id:"comer", nome:"Comeu sem reclamar", pontos:1, grupo:"Comportamento"},
+    {id:"deitar", nome:"Foi para a cama a horas", pontos:1, grupo:"Comportamento"},
+    {id:"simpatia", nome:"Foi simpática e partilhou", pontos:2, grupo:"Comportamento"},
+    {id:"ajudar", nome:"Ajudou sem lhe pedirem", pontos:3, grupo:"Comportamento"},
+    {id:"verdade", nome:"Disse a verdade quando era difícil", pontos:3, grupo:"Comportamento"}
+  ],
+  premios: [
+    {id:"tel15", nome:"15 minutos de telemóvel", custo:5, grupo:"Telemóvel"},
+    {id:"tel30", nome:"30 minutos de telemóvel", custo:9, grupo:"Telemóvel"},
+    {id:"tel60", nome:"1 hora de telemóvel", custo:16, grupo:"Telemóvel"},
+    {id:"doce", nome:"Um doce pequeno", custo:4, grupo:"Doces"},
+    {id:"gelado", nome:"Um gelado", custo:8, grupo:"Doces"},
+    {id:"sobremesa", nome:"Escolher a sobremesa de domingo", custo:12, grupo:"Doces"},
+    {id:"brinqP", nome:"Brinquedo pequeno (até 5 €)", custo:50, grupo:"Brinquedos"},
+    {id:"brinqM", nome:"Brinquedo médio (até 15 €)", custo:120, grupo:"Brinquedos"},
+    {id:"brinqG", nome:"Brinquedo grande (até 30 €)", custo:250, grupo:"Brinquedos"},
+    {id:"jantar", nome:"Escolher o jantar", custo:12, grupo:"Atividades"},
+    {id:"filme", nome:"Noite de filme em casa com pipocas", custo:15, grupo:"Atividades"},
+    {id:"parque", nome:"Ida ao parque", custo:20, grupo:"Atividades"},
+    {id:"cinema", nome:"Ida ao cinema", custo:60, grupo:"Atividades"},
+    {id:"amiga", nome:"Convidar uma amiga para brincar", custo:40, grupo:"Atividades"}
+  ]
+};
+const GRUPOS_T = ["Tarefas","Comportamento"];
+const GRUPOS_P = ["Telemóvel","Doces","Brinquedos","Atividades"];
+const DIAS = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+const DIAS_LONGOS = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
+
+/* ---------- Datas ---------- */
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return ymd(d); };
+const mondayOf = s => { const d = parse(s); d.setDate(d.getDate()-((d.getDay()+6)%7)); return ymd(d); };
+const weekDays = mon => DIAS.map((_,i)=>addDays(mon,i));
+const fmtShort = s => { const d = parse(s); return pad(d.getDate())+"/"+pad(d.getMonth()+1); };
+const today = () => ymd(new Date());
+const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Estado ---------- */
+const state = {
+  config: structuredClone(DEFAULT_CONFIG),
+  weeks: {},            // "2026-10-05" -> {entradas:[...]}
+  tab: "hoje",
+  dia: today(),
+  weekView: mondayOf(today()),
+  confirmId: null,
+  draft: null,
+  db: null, downloads: null, readOnly: false
+};
+
+/* Armazenamento: base de dados partilhada quando existe; senão, só neste navegador. */
+const LS = "pontos-luanna-v1";
+function loadLocal(){ try{ const j = JSON.parse(localStorage.getItem(LS)||"null"); if(j){ if(j.config) state.config=j.config; if(j.weeks) state.weeks=j.weeks; } }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify({config:state.config, weeks:state.weeks})); }catch(e){} }
+
+async function saveWeek(mon){
+  const data = state.weeks[mon] || {entradas:[]};
+  if(state.db){
+    try{ await state.db.doc("semanas/"+mon).set({inicio:mon, entradas:data.entradas}); }
+    catch(e){ handleWriteError(e); }
+  } else saveLocal();
+}
+async function saveConfig(){
+  if(state.db){
+    try{ await state.db.doc("tabela/config").set(state.config); }
+    catch(e){ handleWriteError(e); }
+  } else saveLocal();
+}
+function handleWriteError(e){
+  if(e && e.code==="invalid_argument"){ state.readOnly = true; toast("Só pode ver: não tem permissão para alterar os pontos."); render(); }
+  else toast("Não foi possível guardar. Tente outra vez.");
+}
+
+/* ---------- Cálculos ---------- */
+const allEntries = () => Object.values(state.weeks).flatMap(w => w.entradas||[]);
+const saldo = () => allEntries().reduce((s,e)=>s+(Number(e.pontos)||0),0);
+const entriesOn = dia => (state.weeks[mondayOf(dia)]?.entradas||[]).filter(e=>e.dia===dia);
+const doneOn = (dia, tid) => entriesOn(dia).find(e=>e.tipo==="ganho" && e.ref===tid);
+
+/* ---------- Ações ---------- */
+function toggleTask(t){
+  if(state.readOnly) return;
+  const mon = mondayOf(state.dia);
+  const w = state.weeks[mon] || (state.weeks[mon] = {entradas:[]});
+  const ex = doneOn(state.dia, t.id);
+  if(ex){ w.entradas = w.entradas.filter(e=>e.id!==ex.id); }
+  else { w.entradas.push({id:uid(), tipo:"ganho", ref:t.id, nome:t.nome, pontos:t.pontos, dia:state.dia, ts:Date.now()}); bump(); toast("+"+t.pontos+" "+(t.pontos===1?"ponto":"pontos")+"!"); }
+  saveWeek(mon); render();
+}
+function buyReward(p){
+  if(state.readOnly || saldo() < p.custo) return;
+  const d = today(), mon = mondayOf(d);
+  const w = state.weeks[mon] || (state.weeks[mon] = {entradas:[]});
+  w.entradas.push({id:uid(), tipo:"troca", ref:p.id, nome:p.nome, pontos:-p.custo, dia:d, ts:Date.now()});
+  state.confirmId = null;
+  saveWeek(mon); render(); toast("Trocado: "+p.nome);
+}
+function removeEntry(id){
+  for(const [mon,w] of Object.entries(state.weeks)){
+    if((w.entradas||[]).some(e=>e.id===id)){ w.entradas = w.entradas.filter(e=>e.id!==id); saveWeek(mon); break; }
+  }
+  render(); toast("Anulado");
+}
+
+/* ---------- UI ---------- */
+let toastT;
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("on"),1800); }
+function bump(){ const j=document.getElementById("jar"); j.classList.remove("bump"); void j.offsetWidth; j.classList.add("bump"); }
+
+const view = document.getElementById("view");
+document.getElementById("tabs").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-tab]"); if(!b) return;
+  state.tab = b.dataset.tab; state.confirmId = null;
+  if(state.tab==="ajustar") state.draft = structuredClone(state.config);
+  try{ sessionStorage.setItem("pl-tab", state.tab); }catch(err){}
+  render();
+});
+
+function render(){
+  document.getElementById("saldo").textContent = saldo();
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===state.tab)));
+  ({hoje:renderHoje, trocar:renderTrocar, semana:renderSemana, historico:renderHist, ajustar:renderAjustar})[state.tab]();
+}
+
+function renderHoje(){
+  const mon = mondayOf(state.dia), days = weekDays(mon), t = today();
+  const sumDay = d => entriesOn(d).filter(e=>e.tipo==="ganho").reduce((s,e)=>s+e.pontos,0);
+  let h = `<div class="days" role="group" aria-label="Escolher o dia">`+days.map((d,i)=>{
+    const s = sumDay(d);
+    return `<button data-dia="${d}" aria-pressed="${d===state.dia}" class="${d===t?"today":""}"><span>${DIAS[i]}</span><strong class="num">${parse(d).getDate()}</strong><em class="num">${s?"+"+s:""}</em></button>`;
+  }).join("")+`</div>`;
+  const idx = (parse(state.dia).getDay()+6)%7;
+  h += `<div class="sec-head"><h2>${state.dia===t?"Hoje":DIAS_LONGOS[idx]+", "+fmtShort(state.dia)}</h2><div class="daysum">Ganhou <b class="num">${sumDay(state.dia)}</b> pontos</div></div>`;
+  if(state.readOnly) h += `<p class="note">Está a ver sem permissão para marcar pontos.</p>`;
+  for(const g of GRUPOS_T){
+    const list = state.config.tarefas.filter(x=>x.grupo===g);
+    if(!list.length) continue;
+    h += `<section class="panel"><div class="sec-head"><h3>${g}</h3><span class="muted">Toque para marcar ou desmarcar</span></div><div class="grid">`+
+      list.map(x=>{ const on = !!doneOn(state.dia,x.id);
+        return `<button class="task" data-task="${esc(x.id)}" aria-pressed="${on}" ${state.readOnly?"disabled":""}><span class="tick" aria-hidden="true">${on?"✓":""}</span><span class="name">${esc(x.nome)}</span><span class="pts num">+${x.pontos}</span></button>`;
+      }).join("")+`</div></section>`;
+  }
+  view.innerHTML = h;
+  view.querySelectorAll("[data-dia]").forEach(b=>b.onclick=()=>{ state.dia=b.dataset.dia; render(); });
+  view.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{ const x=state.config.tarefas.find(y=>y.id===b.dataset.task); if(x) toggleTask(x); });
+}
+
+function renderTrocar(){
+  const s = saldo();
+  let h = `<p class="note">Escolha um prémio. Os pontos saem do mealheiro quando confirmar.</p>`;
+  for(const g of GRUPOS_P){
+    const list = state.config.premios.filter(p=>p.grupo===g).sort((a,b)=>a.custo-b.custo);
+    if(!list.length) continue;
+    h += `<section class="panel"><div class="sec-head"><h2>${g}</h2></div><div class="grid">`+list.map(p=>{
+      const ok = s>=p.custo, pct = Math.min(100, Math.round(s/p.custo*100));
+      let act;
+      if(state.confirmId===p.id) act = `<div class="confirm"><span>Trocar ${p.custo} pontos?</span><button class="btn berry" data-yes="${esc(p.id)}">Sim, trocar</button><button class="btn ghost" data-no>Não</button></div>`;
+      else if(ok) act = `<button class="btn" data-buy="${esc(p.id)}" ${state.readOnly?"disabled":""}>Trocar</button>`;
+      else act = `<div class="bar" aria-hidden="true"><span style="width:${pct}%"></span></div><span class="need">Faltam <b class="num">${p.custo-s}</b> pontos</span>`;
+      return `<div class="reward"><div class="row"><span class="name">${esc(p.nome)}</span><span class="cost num"><i aria-hidden="true"></i>${p.custo}</span></div>${act}</div>`;
+    }).join("")+`</div></section>`;
+  }
+  view.innerHTML = h;
+  view.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{ state.confirmId=b.dataset.buy; render(); });
+  view.querySelectorAll("[data-no]").forEach(b=>b.onclick=()=>{ state.confirmId=null; render(); });
+  view.querySelectorAll("[data-yes]").forEach(b=>b.onclick=()=>{ const p=state.config.premios.find(y=>y.id===b.dataset.yes); if(p) buyReward(p); });
+}
+
+function renderSemana(){
+  const mon = state.weekView, days = weekDays(mon);
+  const ent = state.weeks[mon]?.entradas||[];
+  const ganhos = ent.filter(e=>e.tipo==="ganho");
+  const has = (d,id) => ganhos.some(e=>e.dia===d && e.ref===id);
+  const totalDay = d => ganhos.filter(e=>e.dia===d).reduce((s,e)=>s+e.pontos,0);
+  const total = ganhos.reduce((s,e)=>s+e.pontos,0);
+  const gasto = -ent.filter(e=>e.tipo==="troca").reduce((s,e)=>s+e.pontos,0);
+  let h = `<div class="weeknav"><div><h2>Semana de ${fmtShort(mon)} a ${fmtShort(addDays(mon,6))}</h2><p class="note">Ganhou <b class="num">${total}</b> pontos e trocou <b class="num">${gasto}</b>.</p></div>
+    <div class="ctrls"><button class="btn ghost" data-wk="-7" aria-label="Semana anterior">←</button><button class="btn ghost" data-wk="0">Esta semana</button><button class="btn ghost" data-wk="7" aria-label="Semana seguinte">→</button></div></div>`;
+  h += `<div class="tablewrap"><table><thead><tr><th>Tarefa</th><th>Pts</th>${days.map((d,i)=>`<th>${DIAS[i]}<br><span class="num" style="font-weight:500">${parse(d).getDate()}</span></th>`).join("")}</tr></thead><tbody>`;
+  for(const g of GRUPOS_T){
+    const list = state.config.tarefas.filter(x=>x.grupo===g); if(!list.length) continue;
+    h += `<tr class="grp"><td colspan="9">${g}</td></tr>`;
+    h += list.map(x=>`<tr><td>${esc(x.nome)}</td><td class="num">${x.pontos}</td>${days.map(d=>`<td class="mark">${has(d,x.id)?"✓":""}</td>`).join("")}</tr>`).join("");
+  }
+  h += `</tbody><tfoot><tr><td>Total do dia</td><td></td>${days.map(d=>`<td class="num">${totalDay(d)||""}</td>`).join("")}</tr></tfoot></table></div>`;
+  h += `<section class="panel"><div class="sec-head"><h3>Folha para imprimir</h3></div>
+    <p class="note">Uma folha A4 desta semana, com as tarefas em branco para marcar à mão e a lista de prémios. Abra o ficheiro guardado e imprima-o.</p>
+    <div class="bar-actions"><button class="btn berry" id="dl">Guardar folha da semana</button></div></section>`;
+  view.innerHTML = h;
+  view.querySelectorAll("[data-wk]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.wk; state.weekView = n?addDays(state.weekView,n):mondayOf(today()); render(); });
+  const dl = document.getElementById("dl");
+  if(dl) dl.onclick = async ()=>{
+    if(!state.downloads){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([buildSheet(state.config, mon)],{type:"text/html"})); a.download="tabela-pontos-luanna-"+mon+".html"; document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),1000); return; }
+    try{ await state.downloads.save({filename:"tabela-pontos-luanna-"+mon+".html", data:new Blob([buildSheet(state.config, mon)],{type:"text/html"})}); }
+    catch(e){ if(e && e.code!=="cancelled" && e.code!=="declined") toast("Não foi possível guardar a folha."); }
+  };
+}
+
+function renderHist(){
+  const list = allEntries().sort((a,b)=>b.ts-a.ts).slice(0,60);
+  let h = `<div class="sec-head"><h2>Histórico</h2><span class="muted">Últimos movimentos</span></div>`;
+  if(!list.length){ view.innerHTML = h+`<div class="empty">Ainda não há pontos. Marque a primeira tarefa no separador Ganhar.</div>`; return; }
+  h += `<ul class="hist">`+list.map(e=>{
+    const d = (parse(e.dia).getDay()+6)%7;
+    return `<li><span class="when">${DIAS[d]} ${fmtShort(e.dia)}</span><span class="what">${e.tipo==="troca"?"Trocou por ":""}${esc(e.nome)}</span><span class="delta num ${e.pontos>0?"plus":"minus"}">${e.pontos>0?"+":""}${e.pontos}</span>${state.readOnly?"":`<button class="linkbtn" data-undo="${esc(e.id)}">Anular</button>`}</li>`;
+  }).join("")+`</ul>`;
+  view.innerHTML = h;
+  view.querySelectorAll("[data-undo]").forEach(b=>b.onclick=()=>removeEntry(b.dataset.undo));
+}
+
+function renderAjustar(){
+  const d = state.draft || (state.draft = structuredClone(state.config));
+  const row = (kind, x, i) => {
+    const grupos = kind==="t"?GRUPOS_T:GRUPOS_P, val = kind==="t"?x.pontos:x.custo;
+    return `<div class="erow"><input id="${kind}n${i}" data-k="${kind}" data-i="${i}" data-f="nome" value="${esc(x.nome)}" aria-label="Nome">
+      <input id="${kind}p${i}" data-k="${kind}" data-i="${i}" data-f="${kind==="t"?"pontos":"custo"}" type="number" min="1" max="999" value="${val}" aria-label="${kind==="t"?"Pontos":"Custo"}">
+      <select id="${kind}g${i}" data-k="${kind}" data-i="${i}" data-f="grupo" aria-label="Grupo">${grupos.map(g=>`<option ${g===x.grupo?"selected":""}>${g}</option>`).join("")}</select>
+      <button class="x" data-del="${kind}" data-i="${i}" aria-label="Remover ${esc(x.nome)}">×</button></div>`;
+  };
+  let h = `<p class="note">Mude nomes, pontos e preços à vontade. As alterações só contam depois de carregar em Guardar.</p>
+    <section class="panel"><div class="sec-head"><h2>Como ganhar pontos</h2><span class="muted">pontos</span></div><div class="edit">${d.tarefas.map((x,i)=>row("t",x,i)).join("")}</div>
+    <div class="bar-actions"><button class="btn ghost" data-add="t">Adicionar tarefa</button></div></section>
+    <section class="panel"><div class="sec-head"><h2>Prémios</h2><span class="muted">custo</span></div><div class="edit">${d.premios.map((x,i)=>row("p",x,i)).join("")}</div>
+    <div class="bar-actions"><button class="btn ghost" data-add="p">Adicionar prémio</button></div></section>
+    <div class="bar-actions"><button class="btn berry" id="save" ${state.readOnly?"disabled":""}>Guardar alterações</button><button class="btn ghost" id="reset">Repor valores sugeridos</button></div>
+    <section class="panel"><div class="sec-head"><h2>Cópia de segurança</h2></div>
+    <p class="note">Os pontos ficam guardados neste aparelho. Guarde uma cópia de vez em quando, para não os perder se mudar de telemóvel ou limpar o navegador.</p>
+    <div class="bar-actions"><button class="btn ghost" id="exp">Guardar cópia dos pontos</button><label class="btn ghost" for="imp" style="cursor:pointer">Recuperar de uma cópia</label><input type="file" id="imp" accept=".json,application/json" hidden></div></section>`;
+  view.innerHTML = h;
+  view.querySelectorAll("[data-f]").forEach(el=>el.oninput=()=>{
+    const arr = el.dataset.k==="t"?d.tarefas:d.premios, f = el.dataset.f;
+    arr[+el.dataset.i][f] = (f==="pontos"||f==="custo") ? Math.max(1, Math.round(+el.value||1)) : el.value;
+  });
+  view.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ (b.dataset.del==="t"?d.tarefas:d.premios).splice(+b.dataset.i,1); renderAjustar(); });
+  view.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.add==="t") d.tarefas.push({id:uid(), nome:"Nova tarefa", pontos:1, grupo:"Tarefas"});
+    else d.premios.push({id:uid(), nome:"Novo prémio", custo:10, grupo:"Atividades"});
+    renderAjustar();
+  });
+  document.getElementById("save").onclick = ()=>{
+    d.tarefas = d.tarefas.filter(x=>String(x.nome).trim()); d.premios = d.premios.filter(x=>String(x.nome).trim());
+    state.config = structuredClone(d); saveConfig(); toast("Alterações guardadas"); renderAjustar();
+  };
+  document.getElementById("exp").onclick = ()=>{
+    const blob = new Blob([JSON.stringify({config:state.config, weeks:state.weeks}, null, 1)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "pontos-luanna-copia-"+today()+".json";
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  };
+  document.getElementById("imp").onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    f.text().then(t=>{ const j = JSON.parse(t); if(!j.config || !j.weeks) throw 0; state.config=j.config; state.weeks=j.weeks; state.draft=structuredClone(j.config); saveLocal(); render(); toast("Pontos recuperados"); })
+      .catch(()=>toast("Este ficheiro não é uma cópia dos pontos."));
+  };
+  document.getElementById("reset").onclick = ()=>{ state.draft = structuredClone(DEFAULT_CONFIG); renderAjustar(); toast("Valores sugeridos repostos. Carregue em Guardar para os usar."); };
+}
+
+/* ---------- Folha para imprimir (A4 horizontal) ---------- */
+function buildSheet(cfg, mon){
+  const days = weekDays(mon);
+  const rows = GRUPOS_T.map(g=>{
+    const list = cfg.tarefas.filter(x=>x.grupo===g); if(!list.length) return "";
+    return `<tr class="g"><td colspan="9">${g}</td></tr>`+list.map(x=>`<tr><td class="n">${esc(x.nome)}</td><td class="p">${x.pontos}</td>${days.map(()=>`<td></td>`).join("")}</tr>`).join("");
+  }).join("");
+  const prem = GRUPOS_P.map(g=>{
+    const list = cfg.premios.filter(p=>p.grupo===g).sort((a,b)=>a.custo-b.custo); if(!list.length) return "";
+    return `<h4>${g}</h4><ul>`+list.map(p=>`<li><span>${esc(p.nome)}</span><b>${p.custo}</b></li>`).join("")+`</ul>`;
+  }).join("");
+  return `<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><title>Tabela de pontos da Luanna</title>
+<style>
+@page{size:A4 landscape;margin:10mm}
+*{box-sizing:border-box}
+body{font-family:"Baloo 2","Trebuchet MS",Arial,sans-serif;color:#1C2340;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{display:grid;grid-template-columns:1fr 62mm;gap:7mm}
+header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #C22A62;padding-bottom:2mm}
+h1{margin:0;font-size:24pt;color:#C22A62;line-height:1}
+.wk{font-size:12pt}
+table{border-collapse:collapse;width:100%;font-size:10pt}
+th,td{border:1px solid #9AA6C0;height:7.2mm;text-align:center}
+th{background:#E3EAF5;font-size:10pt}
+td.n{text-align:left;padding-left:2mm;width:58mm}
+td.p{width:9mm;font-weight:700;background:#FFF2C7}
+tr.g td{background:#F3F6FB;text-align:left;padding-left:2mm;font-weight:700;font-size:9pt;letter-spacing:.06em;text-transform:uppercase;height:5.5mm}
+tfoot td{font-weight:700;height:9mm}
+aside{border:2px solid #E9A800;border-radius:4mm;padding:3mm 4mm;font-size:9.5pt}
+aside h3{margin:0 0 1mm;font-size:13pt}
+aside h4{margin:2.5mm 0 .5mm;font-size:9pt;text-transform:uppercase;letter-spacing:.06em;color:#5B6584}
+aside ul{list-style:none;margin:0;padding:0}
+aside li{display:flex;justify-content:space-between;gap:2mm;border-bottom:1px dotted #CDD6E6;padding:.6mm 0}
+aside li b{color:#5A4100}
+.saldo{margin-top:4mm;display:grid;grid-template-columns:1fr 18mm;gap:1.5mm;font-size:10pt;align-items:center}
+.saldo span.box{border:1.5px solid #1C2340;height:7mm;border-radius:2mm}
+.rules{grid-column:1/-1;font-size:9pt;color:#5B6584;margin:0}
+</style></head><body><div class="page">
+<header><h1>Tabela de pontos da Luanna</h1><div class="wk">Semana de ${fmtShort(mon)} a ${fmtShort(addDays(mon,6))}</div></header>
+<div><table><thead><tr><th style="text-align:left;padding-left:2mm">O que fiz</th><th>Pts</th>${days.map((d,i)=>`<th>${DIAS[i]} ${parse(d).getDate()}</th>`).join("")}</tr></thead>
+<tbody>${rows}</tbody><tfoot><tr><td class="n">Pontos do dia</td><td></td>${days.map(()=>"<td></td>").join("")}</tr></tfoot></table></div>
+<aside><h3>Trocar pontos</h3>${prem}
+<div class="saldo"><span>Pontos da semana passada</span><span class="box"></span><span>Pontos ganhos esta semana</span><span class="box"></span><span>Pontos trocados</span><span class="box"></span><span><b>Fico com</b></span><span class="box"></span></div></aside>
+<p class="rules">Marque um visto em cada tarefa feita. Os pontos nunca se tiram: quando algo corre mal, esse ponto fica só por ganhar. Contamos juntos ao domingo à noite.</p>
+</div></body></html>`;
+}
+window.buildSheet = buildSheet; window.DEFAULT_CONFIG = DEFAULT_CONFIG;
+
+/* ---------- Arranque ---------- */
+try{ const t = sessionStorage.getItem("pl-tab"); if(t && t!=="ajustar") state.tab = t; }catch(e){}
+loadLocal();
+try{ localStorage.setItem("pl-test","1"); localStorage.removeItem("pl-test"); }catch(e){ document.getElementById("warn").hidden = false; }
+render();
+
+(async ()=>{
+  if(!window.claude?.use) return;
+  claude.use("downloads").then(d=>{ state.downloads=d; if(state.tab==="semana") render(); }).catch(()=>{});
+  let db = null;
+  try{ db = await claude.use("db"); }catch(e){}
+  if(!db) return;
+  state.db = db;
+  try{ const u = await claude.use("user"); const can = u ? await u.can("data.write") : null; if(can===false) state.readOnly = true; }catch(e){}
+  db.doc("tabela/config").onSnapshot(s=>{
+    const d = s.data();
+    if(d && Array.isArray(d.tarefas) && Array.isArray(d.premios)) state.config = {tarefas:d.tarefas, premios:d.premios};
+    if(state.tab!=="ajustar") render(); else document.getElementById("saldo").textContent = saldo();
+  }, ()=>{});
+  db.collection("semanas").onSnapshot(s=>{
+    const w = {};
+    s.docs.forEach(doc=>{ const d = doc.data()||{}; w[doc.id] = {entradas:Array.isArray(d.entradas)?d.entradas:[]}; });
+    state.weeks = w;
+    if(state.tab!=="ajustar") render(); else document.getElementById("saldo").textContent = saldo();
+  }, ()=>toast("A ligação aos pontos guardados falhou. Recarregue a página."));
+})();
+if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+
+</body></html>
